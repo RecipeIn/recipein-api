@@ -32,7 +32,7 @@ export const validate = (req, res, next) => {
 //         },
 //         select: {
 //           id: true,
-//           name: true,
+//           username: true,
 //           email: true,
 //         },
 //       });
@@ -44,7 +44,7 @@ export const validate = (req, res, next) => {
 //         },
 //         select: {
 //           id: true,
-//           name: true,
+//           username: true,
 //           email: true,
 //         },
 //       });
@@ -61,7 +61,7 @@ export const validate = (req, res, next) => {
 export default {
   signup: async (req, res, next) => {
     try {
-      const { name, email, password } = req.body;
+      const { username, email, password } = req.body;
 
       const existingUsers = await prisma.user.findFirst({
         where: { email: email },
@@ -80,7 +80,7 @@ export default {
         // Store user data in the database
         const user = await prisma.user.create({
           data: {
-            name,
+            username,
             email,
             password: hashPassword,
           },
