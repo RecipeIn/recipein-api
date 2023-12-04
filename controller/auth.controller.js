@@ -140,6 +140,7 @@ export default {
 
           res.json({
             status: 200,
+            user_id: user.id,
             access_token,
             refresh_token: refresh_token,
             refresh_token_md5: updatedRefreshToken.token,
@@ -155,6 +156,7 @@ export default {
 
           res.json({
             status: 200,
+            user_id: user.id,
             access_token,
             refresh_token: refresh_token,
             refresh_token_md5: createdRefreshToken.token,
