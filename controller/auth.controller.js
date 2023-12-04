@@ -58,6 +58,8 @@ export const validate = (req, res, next) => {
 //   }
 // };
 
+
+
 export default {
   signup: async (req, res, next) => {
     try {
@@ -182,10 +184,11 @@ export default {
       const data = verifyToken(refreshToken, false);
       if (data?.status) return res.status(data.status).json(data);
 
+      const md5Refresh = createHash('md5').update(refreshToken).digest('hex');
       // Find the refresh token in the database
       const refreshTokenRecord = await prisma.refreshToken.findFirst({
         where: {
-          token: refreshToken,
+          token: md5Refresh,
         },
       });
 
@@ -200,13 +203,15 @@ export default {
       const access_token = generateToken({ id: data.id });
       const refresh_token = generateToken({ id: data.id }, false);
 
+      const md5RefreshUpdate = createHash('md5').update(refresh_token).digest('hex')
+
       // Update the refresh token in the database
       await prisma.refreshToken.update({
         where: {
-          id: refreshTokenRecord.id,
+          user_id: refreshTokenRecord.user_id,
         },
         data: {
-          token: refresh_token,
+          token: md5RefreshUpdate,
         },
       });
 
