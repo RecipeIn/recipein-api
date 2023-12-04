@@ -58,8 +58,6 @@ export const validate = (req, res, next) => {
 //   }
 // };
 
-
-
 export default {
   signup: async (req, res, next) => {
     try {
@@ -110,7 +108,7 @@ export default {
       const user = await prisma.user.findFirst({
         where: { email: email },
       });
-  
+
       if (!user) {
         return res.status(404).json({
           status: 404,
@@ -126,23 +124,43 @@ export default {
       } else {
         const access_token = generateToken({ id: user.id });
         const refresh_token = generateToken({ id: user.id }, false);
-        const md5Refresh = createHash("md5").update(refresh_token).digest("hex");
-  
-        await prisma.refreshToken.create({
-          data: {
-            user_id: user.id,
-            token: md5Refresh,
-          },
+        const md5Refresh = createHash("md5")
+          .update(refresh_token)
+          .digest("hex");
+
+        const existingRefreshToken = await prisma.refreshToken.findUnique({
+          where: { user_id: user.id },
         });
-  
-        res.json({
-          status: 200,
-          userId: user.id,
-          access_token,
-          refresh_token,
-        });
+        if (existingRefreshToken) {
+          // Update existing refresh token
+          const updatedRefreshToken = await prisma.refreshToken.update({
+            where: { user_id: user.id },
+            data: { token: md5Refresh },
+          });
+
+          res.json({
+            status: 200,
+            access_token,
+            refresh_token: refresh_token,
+            refresh_token_md5: updatedRefreshToken.token,
+          });
+        } else {
+          // Create new refresh token
+          const createdRefreshToken = await prisma.refreshToken.create({
+            data: {
+              token: md5Refresh,
+              user: { connect: { id: user.id } },
+            },
+          });
+
+          res.json({
+            status: 200,
+            access_token,
+            refresh_token: refresh_token,
+            refresh_token_md5: createdRefreshToken.token,
+          });
+        }
       }
-  
     } catch (err) {
       next(err);
     }
@@ -184,7 +202,7 @@ export default {
       const data = verifyToken(refreshToken, false);
       if (data?.status) return res.status(data.status).json(data);
 
-      const md5Refresh = createHash('md5').update(refreshToken).digest('hex');
+      const md5Refresh = createHash("md5").update(refreshToken).digest("hex");
       // Find the refresh token in the database
       const refreshTokenRecord = await prisma.refreshToken.findFirst({
         where: {
@@ -203,7 +221,9 @@ export default {
       const access_token = generateToken({ id: data.id });
       const refresh_token = generateToken({ id: data.id }, false);
 
-      const md5RefreshUpdate = createHash('md5').update(refresh_token).digest('hex')
+      const md5RefreshUpdate = createHash("md5")
+        .update(refresh_token)
+        .digest("hex");
 
       // Update the refresh token in the database
       await prisma.refreshToken.update({
