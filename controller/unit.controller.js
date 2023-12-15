@@ -1,36 +1,61 @@
-import { prisma } from "../lib/dbConnection.js";
-
+import { executeQuery } from "../lib/dbConnection.js";
 export * as unitController from "./unit.controller.js";
 
 export const getUnit = async (req, res, next) => {
   try {
-    const unit = await prisma.unit.findMany();
+    const query = "SELECT * FROM Unit";
+    const units = await executeQuery(query);
+
     res.json({
       status: 200,
-      data: unit,
+      data: units,
     });
   } catch (error) {
-    throw new error(`Error: ${error}`);
+    next(new Error(`Error: ${error.message}`));
   }
 };
+
+export const getUnitDetail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const query = "SELECT * FROM Unit WHERE id=?";
+    const values = [id];
+
+    const unitDetail = await executeQuery(query, values);
+
+    if (unitDetail.length === 0) {
+      return res.status(404).json({
+        status: 404,
+        message: "Unit not found",
+      });
+    }
+
+    res.json({
+      status: 200,
+      data: unitDetail[0],
+    });
+  } catch (error) {
+    next(new Error(`Error: ${error.message}`));
+  }
+};
+
 
 export const createUnit = async (req, res, next) => {
   try {
     const { name } = req.body;
 
-    // Use Prisma to create the report
-    const createdUnit = await prisma.unit.create({
-      data: {
-        name,
-      },
-    });
+    const query = "INSERT INTO Unit (name) VALUES (?)";
+    const values = [name];
+
+    const createdUnit = await executeQuery(query, values);
 
     res.status(201).json({
       status: 201,
       data: createdUnit,
     });
   } catch (error) {
-    next(error);
+    next(new Error(`Error: ${error.message}`));
   }
 };
 
@@ -39,15 +64,10 @@ export const updateUnit = async (req, res, next) => {
     const { id } = req.params;
     const { name } = req.body;
 
-    // Use Prisma to update the category
-    const updatedUnit = await prisma.unit.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        name,
-      },
-    });
+    const query = "UPDATE Unit SET name=? WHERE id=?";
+    const values = [name, id];
+
+    const updatedUnit = await executeQuery(query, values);
 
     res.json({
       status: 200,
@@ -62,12 +82,10 @@ export const deleteUnit = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Use Prisma to delete the category
-    const deletedUnit = await prisma.unit.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
+    const query = "DELETE FROM Unit WHERE id=?";
+    const values = [id];
+
+    const deletedUnit = await executeQuery(query, values);
 
     res.json({
       status: 200,

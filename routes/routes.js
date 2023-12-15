@@ -11,6 +11,7 @@ import {
   getUserFavorite,
   getUserFavoriteByRecipeId,
   getUserFavoriteByUserId,
+  getUserFavoriteDetail,
   updateUserFavorite,
 } from "../controller/userFavorite.controller.js";
 import { recipeReviewController } from "../controller/recipeReview.controller.js";
@@ -49,23 +50,15 @@ const tokenValidation = (isRefresh = false) => {
 routes.post(
   "/signup",
   [
-    body("name")
+    body("username")
       .trim()
       .not()
       .isEmpty()
-      .withMessage("Name must not be empty.")
+      .withMessage("Username must not be empty.")
       .isLength({ min: 3 })
-      .withMessage("Name must be at least 3 characters long")
+      .withMessage("Username must be at least 3 characters long")
       .escape(),
-    body("email", "Invalid email address.")
-      .trim()
-      .isEmail()
-      .custom(async (email) => {
-        const isExist = await fetchUserByEmailOrID(email);
-        if (isExist.length)
-          throw new Error("A user already exists with this e-mail address");
-        return true;
-      }),
+    body("email", "Invalid email address.").trim().isEmail(),
     body("password")
       .trim()
       .isLength({ min: 4 })
@@ -92,63 +85,81 @@ routes.get(
   validate,
   controller.refreshToken
 );
+routes.put("/change-password", controller.changePassword);
 
 //recipe
 routes.get("/recipe", recipeController.getRecipe);
 routes.post("/recipe", recipeController.createRecipe);
+routes.get("/recipe/:id", recipeController.getRecipeDetail);
 routes.put("/recipe/:id", recipeController.updateRecipe);
 routes.delete("/recipe/:id", recipeController.deleteRecipe);
 
 //category
 routes.get("/category", categoryController.getCategory);
 routes.post("/category", categoryController.createCategory);
+routes.get("/category/:id", categoryController.getCategoryDetail);
 routes.put("/category/:id", categoryController.updateCategory);
 routes.delete("/category/:id", categoryController.deleteCategory);
 
 //unit
 routes.get("/unit", unitController.getUnit);
 routes.post("/unit", unitController.createUnit);
+routes.get("/unit/:id", unitController.getUnitDetail);
 routes.put("/unit/:id", unitController.updateUnit);
 routes.delete("/unit/:id", unitController.deleteUnit);
 
 //recipeingredient
-routes.get("/recipeingredient", recipeIngredientController.getRecipeIngredient);
+routes.get(
+  "/recipe-ingredient",
+  recipeIngredientController.getRecipeIngredient
+);
 routes.post(
-  "/recipeingredient",
+  "/recipe-ingredient",
   recipeIngredientController.createRecipeIngredient
 );
+routes.get(
+  "/recipe-ingredient/:id",
+  recipeIngredientController.getRecipeIngredientDetail
+);
 routes.put(
-  "/recipeingredient/:id",
+  "/recipe-ingredient/:id",
   recipeIngredientController.updateRecipeIngredient
 );
 routes.delete(
-  "/recipeingredient/:id",
+  "/recipe-ingredient/:id",
   recipeIngredientController.deleteRecipeIngredient
 );
 
 //ingredient
 routes.get("/ingredient", ingredientController.getIngredient);
 routes.post("/ingredient", ingredientController.createIngredient);
+routes.get("/ingredient/:id", ingredientController.getIngredientDetail);
 routes.put("/ingredient/:id", ingredientController.updateIngredient);
 routes.delete("/ingredient/:id", ingredientController.deleteIngredient);
 
-//userfavorite
+// //userfavorite
 routes.get("/favorite", getUserFavorite);
 routes.post("/favorite", createUserFavorite);
+routes.get("/favorite/:id", getUserFavoriteDetail);
 routes.put("/favorite/:id", updateUserFavorite);
 routes.delete("/favorite/:id", deleteUserFavorite);
 routes.get("/favorite/user/:user_id", getUserFavoriteByUserId);
 routes.get("/favorite/recipe/:recipe_id", getUserFavoriteByRecipeId);
 
-//recipereview
+// //recipereview
 routes.get("/review", recipeReviewController.getRecipeReview);
 routes.post("/review", recipeReviewController.createRecipeReview);
+routes.get("/review/:id", recipeReviewController.getRecipeReviewDetail);
 routes.put("/review/:id", recipeReviewController.updateRecipeReview);
 routes.delete("/review/:id", recipeReviewController.deleteRecipeReview);
 
-//usernutrition
+// //usernutrition
 routes.get("/user-nutrition", userNutritionController.getUserNutrition);
 routes.post("/user-nutrition", userNutritionController.createUserNutrition);
+routes.get(
+  "/user-nutrition/:id",
+  userNutritionController.getUserNutritionDetail
+);
 routes.put("/user-nutrition/:id", userNutritionController.updateUserNutrition);
 routes.delete(
   "/user-nutrition/:id",
@@ -159,19 +170,21 @@ routes.get(
   userNutritionController.getUserNutritionByUserId
 );
 
-//nutrition
+// //nutrition
 routes.get("/nutrition", nutritionController.getNutrition);
 routes.post("/nutrition", nutritionController.createNutrition);
+routes.get("/nutrition/:id", nutritionController.getNutritionDetail);
 routes.put("/nutrition/:id", nutritionController.updateNutrition);
 routes.delete("/nutrition/:id", nutritionController.deleteNutrition);
 
-//instruction
+// //instruction
 routes.get("/instruction", instructionController.getInstruction);
 routes.post("/instruction", instructionController.createInstruction);
+routes.get("/instruction/:id", instructionController.getInstructionDetail);
 routes.put("/instruction/:id", instructionController.updateInstruction);
 routes.delete("/instruction/:id", instructionController.deleteInstruction);
 
-//recipeinstruction
+// //recipeinstruction
 routes.get(
   "/recipe-instruction",
   recipeInstructionController.getRecipeInstruction
@@ -179,6 +192,10 @@ routes.get(
 routes.post(
   "/recipe-instruction",
   recipeInstructionController.createRecipeInstruction
+);
+routes.get(
+  "/recipe-instruction/:id",
+  recipeInstructionController.getRecipeInstructionDetail
 );
 routes.put(
   "/recipe-instruction/:id",

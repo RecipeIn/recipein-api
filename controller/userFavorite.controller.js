@@ -1,27 +1,63 @@
-import { prisma } from "../lib/dbConnection.js";
+import { executeQuery } from "../lib/dbConnection.js";
 
 export const getUserFavorite = async (req, res, next) => {
   try {
-    const userFavorite = await prisma.userFavorite.findMany();
+    const query =
+      "SELECT uf.*, u.username AS user_username, r.name AS recipe_name " +
+      "FROM UserFavorite uf " +
+      "JOIN User u ON uf.user_id = u.id " +
+      "JOIN Recipe r ON uf.recipe_id = r.id";
+
+    const userFavorites = await executeQuery(query);
+
     res.json({
       status: 200,
-      data: userFavorite,
+      data: userFavorites,
     });
   } catch (error) {
-    throw new error(`Error: ${error}`);
+    next(new Error(`Error: ${error.message}`));
   }
 };
+
+export const getUserFavoriteDetail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const query =
+      "SELECT uf.*, u.username AS user_username, r.name AS recipe_name " +
+      "FROM UserFavorite uf " +
+      "JOIN User u ON uf.user_id = u.id " +
+      "JOIN Recipe r ON uf.recipe_id = r.id " +
+      "WHERE uf.id=?";
+    const values = [id];
+
+    const userFavoriteDetail = await executeQuery(query, values);
+
+    if (userFavoriteDetail.length === 0) {
+      return res.status(404).json({
+        status: 404,
+        message: "UserFavorite not found",
+      });
+    }
+
+    res.json({
+      status: 200,
+      data: userFavoriteDetail[0],
+    });
+  } catch (error) {
+    next(new Error(`Error: ${error.message}`));
+  }
+};
+
 
 export const getUserFavoriteByUserId = async (req, res, next) => {
   try {
     const { user_id } = req.params;
 
-    // Use Prisma to get user favorites by user ID
-    const userFavorites = await prisma.userFavorite.findMany({
-      where: {
-        user_id: parseInt(user_id),
-      },
-    });
+    const query = "SELECT * FROM UserFavorite WHERE user_id=?";
+    const values = [user_id];
+
+    const userFavorites = await executeQuery(query, values);
 
     res.json({
       status: 200,
@@ -36,12 +72,10 @@ export const getUserFavoriteByRecipeId = async (req, res, next) => {
   try {
     const { recipe_id } = req.params;
 
-    // Use Prisma to get user favorites by recipe ID
-    const userFavorites = await prisma.userFavorite.findMany({
-      where: {
-        recipe_id: parseInt(recipe_id),
-      },
-    });
+    const query = "SELECT * FROM UserFavorite WHERE recipe_id=?";
+    const values = [recipe_id];
+
+    const userFavorites = await executeQuery(query, values);
 
     res.json({
       status: 200,
@@ -56,24 +90,18 @@ export const createUserFavorite = async (req, res, next) => {
   try {
     const { user_id, recipe_id } = req.body;
 
-    // Use Prisma to create the report
-    const createdUserFavorite = await prisma.userFavorite.create({
-      data: {
-        user: {
-          connect: { id: user_id },
-        },
-        recipe: {
-          connect: { id: recipe_id },
-        },
-      },
-    });
+    const query =
+      "INSERT INTO UserFavorite (user_id, recipe_id) VALUES (?, ?)";
+    const values = [user_id, recipe_id];
+
+    const createdUserFavorite = await executeQuery(query, values);
 
     res.status(201).json({
       status: 201,
       data: createdUserFavorite,
     });
   } catch (error) {
-    next(error);
+    next(new Error(`Error: ${error.message}`));
   }
 };
 
@@ -82,20 +110,27 @@ export const updateUserFavorite = async (req, res, next) => {
     const { id } = req.params;
     const { user_id, recipe_id } = req.body;
 
-    // Use Prisma to update the category
-    const updatedUserFavorite = await prisma.userFavorite.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        user: {
-          connect: { id: user_id },
-        },
-        recipe: {
-          connect: { id: recipe_id },
-        },
-      },
-    });
+    // Determine which field to update
+    const updateFields = { user_id, recipe_id };
+    const validFields = Object.entries(updateFields)
+      .filter(([key, value]) => value !== undefined)
+      .map(([key]) => key);
+
+    if (validFields.length === 0) {
+      return res.status(400).json({
+        status: 400,
+        message: "No valid fields provided for update.",
+      });
+    }
+
+    const setClauses = validFields.map((field) => `${field} = ?`);
+    const values = validFields.map((field) => updateFields[field]);
+    values.push(id);
+
+    const setClause = setClauses.join(", ");
+    const query = `UPDATE UserFavorite SET ${setClause} WHERE id=?`;
+
+    const updatedUserFavorite = await executeQuery(query, values);
 
     res.json({
       status: 200,
@@ -110,12 +145,10 @@ export const deleteUserFavorite = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Use Prisma to delete the category
-    const deletedUserFavorite = await prisma.userFavorite.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
+    const query = "DELETE FROM UserFavorite WHERE id=?";
+    const values = [id];
+
+    const deletedUserFavorite = await executeQuery(query, values);
 
     res.json({
       status: 200,
@@ -125,3 +158,4 @@ export const deleteUserFavorite = async (req, res, next) => {
     next(new Error(`Error: ${error.message}`));
   }
 };
+
