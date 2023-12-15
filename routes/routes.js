@@ -20,11 +20,12 @@ import { nutritionController } from "../controller/nutrition.controller.js";
 import { instructionController } from "../controller/instruction.controller.js";
 import { recipeIngredientController } from "../controller/recipeIngredient.controller.js";
 import { recipeInstructionController } from "../controller/recipeInstruction.controller.js";
+
 import express from 'express';
 import cors from 'cors';
+const app = express();
 app.use(cors());
 
-const app = express();
 
 const routes = Router({ strict: true });
 
