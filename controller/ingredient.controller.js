@@ -17,10 +17,10 @@ export const getIngredient = async (req, res, next) => {
 
 export const createIngredient = async (req, res, next) => {
   try {
-    const { name, image } = req.body;
+    const { name } = req.body;
 
-    const query = "INSERT INTO Ingredient (name, image) VALUES (?, ?)";
-    const values = [name, image];
+    const query = "INSERT INTO Ingredient (name) VALUES (?)";
+    const values = [name];
 
     const createdIngredient = await executeQuery(query, values);
 
@@ -36,23 +36,10 @@ export const createIngredient = async (req, res, next) => {
 export const updateIngredient = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, image } = req.body;
+    const { name } = req.body;
 
-    // Determine which field to update
-    const updateField =
-      name !== undefined ? "name" : image !== undefined ? "image" : null;
-
-    if (!updateField) {
-      return res.status(400).json({
-        status: 400,
-        message: "No valid field provided for update.",
-      });
-    }
-
-    const value = updateField === "name" ? name : image;
-
-    const query = `UPDATE Ingredient SET ${updateField}=? WHERE id=?`;
-    const values = [value, id];
+    const query = "UPDATE Ingredient SET name=? WHERE id=?";
+    const values = [name, id];
 
     const updatedIngredient = await executeQuery(query, values);
 
