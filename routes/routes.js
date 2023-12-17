@@ -20,12 +20,7 @@ import { nutritionController } from "../controller/nutrition.controller.js";
 import { instructionController } from "../controller/instruction.controller.js";
 import { recipeIngredientController } from "../controller/recipeIngredient.controller.js";
 import { recipeInstructionController } from "../controller/recipeInstruction.controller.js";
-
-import express from 'express';
-import cors from 'cors';
-const app = express();
-app.use(cors());
-
+import { recipeNutritionController } from "../controller/recipeNutrition.controller.js";
 
 const routes = Router({ strict: true });
 
@@ -210,6 +205,25 @@ routes.put(
 routes.delete(
   "/recipe-instruction/:id",
   recipeInstructionController.deleteRecipeInstruction
+);
+
+//recipenutrition
+routes.get("/recipe-nutrition", recipeNutritionController.getRecipeNutritions);
+routes.post(
+  "/recipe-nutrition",
+  recipeNutritionController.createRecipeNutrition
+);
+routes.get(
+  "/recipe-nutrition/:id",
+  recipeNutritionController.getRecipeNutritionDetail
+);
+routes.put(
+  "/recipe-nutrition/:id",
+  recipeNutritionController.updateRecipeNutrition
+);
+routes.delete(
+  "/recipe-nutrition/:id",
+  recipeNutritionController.deleteRecipeNutrition
 );
 
 export default routes;
