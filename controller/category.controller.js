@@ -40,13 +40,13 @@ export const getCategoryDetail = async (req, res, next) => {
   }
 };
 
-
 export const createCategory = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, description, image } = req.body;
 
-    const query = "INSERT INTO Category (name) VALUES (?)";
-    const values = [name];
+    const query =
+      "INSERT INTO Category (name, description, image) VALUES (?, ?, ?)";
+    const values = [name, description, image];
 
     const createdCategory = await executeQuery(query, values);
 
@@ -62,10 +62,27 @@ export const createCategory = async (req, res, next) => {
 export const updateCategory = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, description, image } = req.body;
 
-    const query = "UPDATE Category SET name=? WHERE id=?";
-    const values = [name, id];
+    // Determine which field to update
+    const updateFields = { name, description, image };
+    const validFields = Object.entries(updateFields)
+      .filter(([key, value]) => value !== undefined)
+      .map(([key]) => key);
+
+    if (validFields.length === 0) {
+      return res.status(400).json({
+        status: 400,
+        message: "No valid fields provided for update.",
+      });
+    }
+
+    const setClauses = validFields.map((field) => `${field} = ?`);
+    const values = validFields.map((field) => updateFields[field]);
+    values.push(id);
+
+    const setClause = setClauses.join(", ");
+    const query = `UPDATE Category SET ${setClause} WHERE id=?`;
 
     const updatedCategory = await executeQuery(query, values);
 
