@@ -64,32 +64,33 @@ export const updateCategory = async (req, res, next) => {
     const { id } = req.params;
     const { name, description, image } = req.body;
 
-    // Determine which field to update
-    const updateFields = { name, description, image };
-    const validFields = Object.entries(updateFields)
-      .filter(([key, value]) => value !== undefined)
-      .map(([key]) => key);
+    // Check if at least one valid field is provided
+    if (name || description || image) {
+      const updateFields = { name, description, image };
+      const setClauses = Object.entries(updateFields)
+        .filter(([key, value]) => value !== undefined)
+        .map(([key, value]) => `${key} = ?`);
 
-    if (validFields.length === 0) {
+      const values = Object.values(updateFields).filter(
+        (value) => value !== undefined
+      );
+      values.push(id);
+
+      const setClause = setClauses.join(", ");
+      const query = `UPDATE Category SET ${setClause} WHERE id=?`;
+
+      const updatedCategory = await executeQuery(query, values);
+
+      res.json({
+        status: 200,
+        data: updatedCategory,
+      });
+    } else {
       return res.status(400).json({
         status: 400,
         message: "No valid fields provided for update.",
       });
     }
-
-    const setClauses = validFields.map((field) => `${field} = ?`);
-    const values = validFields.map((field) => updateFields[field]);
-    values.push(id);
-
-    const setClause = setClauses.join(", ");
-    const query = `UPDATE Category SET ${setClause} WHERE id=?`;
-
-    const updatedCategory = await executeQuery(query, values);
-
-    res.json({
-      status: 200,
-      data: updatedCategory,
-    });
   } catch (error) {
     next(new Error(`Error: ${error.message}`));
   }
