@@ -68,11 +68,20 @@ export const getRecipeDetail = async (req, res, next) => {
 
 export const createRecipe = async (req, res, next) => {
   try {
-    const { user_id, category_id, name, description, rating, status, image } =
-      req.body;
+    const {
+      user_id,
+      category_id,
+      name,
+      description,
+      rating,
+      status,
+      image,
+      preparation_time,
+      cooking_time,
+    } = req.body;
 
     const query =
-      "INSERT INTO Recipe (name, description, rating, status, image, user_id, category_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO Recipe (name, description, rating, status, image, user_id, category_id, preparation_time, cooking_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const values = [
       name,
       description,
@@ -81,6 +90,8 @@ export const createRecipe = async (req, res, next) => {
       image,
       user_id,
       category_id,
+      preparation_time,
+      cooking_time,
     ];
 
     const createdRecipe = await executeQuery(query, values);
@@ -97,8 +108,17 @@ export const createRecipe = async (req, res, next) => {
 export const updateRecipe = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, description, rating, status, image, user_id, category_id } =
-      req.body;
+    const {
+      name,
+      description,
+      rating,
+      status,
+      image,
+      user_id,
+      category_id,
+      preparation_time,
+      cooking_time,
+    } = req.body;
 
     const updateFields = {
       name,
@@ -108,6 +128,8 @@ export const updateRecipe = async (req, res, next) => {
       image,
       user_id,
       category_id,
+      preparation_time,
+      cooking_time,
     };
 
     const validFields = Object.entries(updateFields)
