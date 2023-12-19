@@ -1,7 +1,6 @@
 import { executeQuery } from "../lib/dbConnection.js";
 export * as recipeNutritionController from "./recipeNutrition.controller.js";
 
-
 export const getRecipeNutritions = async (req, res, next) => {
   try {
     const query =
@@ -52,7 +51,7 @@ export const createRecipeNutrition = async (req, res, next) => {
     const { recipe_id, nutrition_id, qty } = req.body;
 
     const query =
-      "INSERT INTO RecipeNutrition (recipe_id, nutrition_id, qty) VALUES (?, ?)";
+      "INSERT INTO RecipeNutrition (recipe_id, nutrition_id, qty) VALUES (?, ?, ?)";
     const values = [recipe_id, nutrition_id, qty];
 
     const createdRecipeNutrition = await executeQuery(query, values);
