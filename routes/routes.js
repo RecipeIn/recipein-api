@@ -87,6 +87,7 @@ routes.get(
   controller.refreshToken
 );
 routes.put("/change-password", controller.changePassword);
+routes.put("/update-profile", tokenValidation(), validate, controller.updateProfile);
 
 //recipe
 routes.get("/recipe", recipeController.getRecipe);

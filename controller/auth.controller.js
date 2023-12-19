@@ -233,4 +233,71 @@ export default {
       next(err);
     }
   },
+  updateProfile: async (req, res, next) => {
+    try {
+      const {
+        username,
+        email,
+        first_name,
+        last_name,
+        gender,
+        age,
+        height,
+        weight,
+        activity,
+        avatar,
+      } = req.body;
+
+      const data = verifyToken(req.headers.access_token);
+      if (data?.status) return res.status(data.status).json(data);
+
+      const getUserQuery = "SELECT * FROM User WHERE id = ?";
+      const userResults = await executeQuery(getUserQuery, [data.id]);
+      const user = userResults[0];
+
+      if (!user) {
+        return res.status(404).json({
+          status: 404,
+          message: "User not found",
+        });
+      }
+
+      // Check if the provided email is already used by another user
+      if (email && email !== user.email) {
+        const existingUserQuery = "SELECT * FROM User WHERE email = ?";
+        const existingUsers = await executeQuery(existingUserQuery, [email]);
+
+        if (existingUsers.length > 0) {
+          return res.status(400).json({
+            status: 400,
+            message: "Email sudah terpakai.",
+          });
+        }
+      }
+
+      // Update the user profile
+      const updateProfileQuery =
+        "UPDATE User SET username = ?, email = ?, first_name = ?, last_name = ?, gender = ?, age = ?, height = ?, weight = ?, activity = ?, avatar = ? WHERE id = ?";
+      await executeQuery(updateProfileQuery, [
+        username,
+        email,
+        first_name,
+        last_name,
+        gender,
+        age,
+        height,
+        weight,
+        activity,
+        avatar,
+        user.id,
+      ]);
+
+      res.json({
+        status: 200,
+        message: "Profile updated successfully.",
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
