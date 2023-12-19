@@ -49,11 +49,11 @@ export const getRecipeNutritionDetail = async (req, res, next) => {
 
 export const createRecipeNutrition = async (req, res, next) => {
   try {
-    const { recipe_id, nutrition_id } = req.body;
+    const { recipe_id, nutrition_id, qty } = req.body;
 
     const query =
-      "INSERT INTO RecipeNutrition (recipe_id, nutrition_id) VALUES (?, ?)";
-    const values = [recipe_id, nutrition_id];
+      "INSERT INTO RecipeNutrition (recipe_id, nutrition_id, qty) VALUES (?, ?)";
+    const values = [recipe_id, nutrition_id, qty];
 
     const createdRecipeNutrition = await executeQuery(query, values);
 
@@ -69,10 +69,10 @@ export const createRecipeNutrition = async (req, res, next) => {
 export const updateRecipeNutrition = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { recipe_id, nutrition_id } = req.body;
+    const { recipe_id, nutrition_id, qty } = req.body;
 
     // Determine which field to update
-    const updateFields = { recipe_id, nutrition_id };
+    const updateFields = { recipe_id, nutrition_id, qty };
     const validFields = Object.entries(updateFields)
       .filter(([key, value]) => value !== undefined)
       .map(([key]) => key);
