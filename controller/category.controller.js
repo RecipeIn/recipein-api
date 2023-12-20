@@ -45,7 +45,7 @@ export const createCategory = async (req, res, next) => {
     const { name, description, image } = req.body;
 
     const query =
-      "INSERT INTO Category (name, description, image) VALUES (?, ?, ?)";
+      "INSERT INTO Category (name, description, image, image_background) VALUES (?, ?, ?, ?)";
     const values = [name, description, image];
 
     const createdCategory = await executeQuery(query, values);
@@ -62,10 +62,10 @@ export const createCategory = async (req, res, next) => {
 export const updateCategory = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, description, image } = req.body;
+    const { name, description, image, image_background } = req.body;
 
     // Check if at least one valid field is provided
-    if (name || description || image) {
+    if (name || description || image || image_background) {
       const updateFields = { name, description, image };
       const setClauses = Object.entries(updateFields)
         .filter(([key, value]) => value !== undefined)
