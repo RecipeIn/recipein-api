@@ -1,11 +1,18 @@
 import express from "express";
 // import dbConnection from './dbConnection.js';
+import cors from "cors";
 import routes from "./routes/routes.js";
 const app = express();
 const port = process.env.PORT || 3000;
 
+const corsOptions = {
+  origin: "*",
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+};
+
 // Middleware to parse JSON requests
 app.use(express.json());
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -18,18 +25,6 @@ app.use((err, req, res, next) => {
     message: err.message,
   });
 });
-
-// If database is connected successfully, then run the server
-// dbConnection
-//     .getConnection()
-//     .then(() => {
-//         app.listen(port, () => {
-//             console.log(`Server is running on port ${port}`);
-//         });
-//     })
-//     .catch((err) => {
-//         console.log(`Failed to connect to the database: ${err.message}`);
-//     });
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);
